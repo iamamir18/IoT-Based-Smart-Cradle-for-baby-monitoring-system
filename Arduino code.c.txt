@@ -1,0 +1,169 @@
+#include <LiquidCrystal.h>
+const int rs = 13, en = 12, d4 = 10, d5 = 11, d6 = 9, d7 = 8;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+#include<dht.h>
+#define dht_dpin 3
+dht DHT;
+
+int fan=7;
+int sound=4;
+
+int Voice=2;
+   
+#define IN1 6      // left motor
+#define IN2 5    // left motor
+
+
+int i=0;
+
+void setup()
+{
+  Serial.begin(9600);
+  lcd.begin(16,2);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(sound,INPUT);
+  pinMode(A0,INPUT);
+
+  pinMode(fan, OUTPUT);
+  pinMode(Voice,OUTPUT);
+
+  digitalWrite(Voice,HIGH);
+  digitalWrite(fan,LOW);
+  digitalWrite(IN1,LOW);
+  digitalWrite(IN2,LOW);
+  
+      Serial.begin(9600);
+//      lcd.begin(16, 2);
+      lcd.print("BABY CRADLE..");
+      delay(1000);
+      while(1)
+      {
+        digitalWrite(Voice,LOW);
+        delay(1500);
+        digitalWrite(Voice,HIGH);
+        delay(1000);
+      }
+ 
+}
+
+void loop()
+{
+   SOUND_MONITOR();
+   delay(1000);
+   TEMP_MONITOR();
+   delay(1000);
+   WET_MONITOR();
+   delay(1000);
+ }
+
+void TEMP_MONITOR()
+{
+      DHT.read11(dht_dpin);
+ 
+  Serial.print("Temperature");
+  Serial.print(DHT.temperature);
+  Serial.print("C");
+  Serial.println(" ");
+ 
+  lcd.clear();
+  lcd.print("TEMP:");
+  lcd.print(DHT.temperature);
+  
+  delay(1000);
+  if(DHT.temperature>32)
+  {
+  digitalWrite(fan,HIGH);
+  lcd.clear();
+  lcd.print("MORE TEMP");
+  lcd.print("DETECTED..");
+  Serial.print("$More Temperature#");
+  Serial.println();
+  delay(1000);
+ }
+ else
+ {
+  digitalWrite(fan,LOW);
+ }
+
+}
+void WET_MONITOR()
+{
+  int WET_val=analogRead(A0);
+//  WET_val=1023-WET_val;
+  lcd.clear();
+  lcd.print("WET:");
+  lcd.print(WET_val);
+  Serial.print("WET:");
+  Serial.println(WET_val);
+  delay(1000);
+  if(WET_val<700)
+  {
+    lcd.clear();
+    lcd.print("BABY IS WET..");
+    Serial.println("$Baby is Wet#");
+//    CRADLE_START();
+    
+  }
+
+
+}
+void SOUND_MONITOR()
+{
+  int Sound_val=digitalRead(sound);
+  lcd.clear();
+  lcd.print("SOUND:");
+  lcd.print(Sound_val);
+  Serial.print("SOUND:");
+  Serial.println(Sound_val);
+  delay(1000);
+  if(Sound_val==HIGH)
+  {
+    lcd.clear();
+    lcd.print("BABY CRYING..");
+    Serial.println("$Baby Crying...#");
+    CRADLE_START(); 
+  }
+}
+
+void CRADLE_START()
+{ 
+   digitalWrite(Voice,LOW);
+  for(i=0;i<2;i++)
+  {
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+     digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+    delay(300);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    delay(300);
+  }
+  digitalWrite(Voice,HIGH);
+  STOP();
+}
+void STOP()
+{
+   
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+ 
+}
